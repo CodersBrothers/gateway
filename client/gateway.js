@@ -3,6 +3,7 @@
  * TODO camelcase methods
  */
 (function(){
+    "use strict";
 
     /**
      * Client to connect to a darkwallet gateway.
@@ -396,7 +397,14 @@
         });
     };
 
-    // Expose only GatewayClient
+    // Expose at window
     window.GatewayClient = GatewayClient;
+
+    // Expose as AMD module
+    if (typeof window.define === "function" && window.define.amd) {
+        window.define("GatewayClient", [], function() {
+            return window.GatewayClient;
+        });
+    }
 
 })();
