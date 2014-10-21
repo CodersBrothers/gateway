@@ -49,3 +49,8 @@ address history
 $ curl http://localhost:8888/address/1dice3jkpTvevsohA4Np1yP4uKzG1SRLv
 { "history" : [{"spend_hash": "cdf6ea4f4590fbc847855cf68af181f1398b8997081cf0cfbd14e0f2cf2808ea", "output_height": 228180, "spend_index": 0, "value": 1000000, ....
 ```
+
+TODO
+--------------
+* Add to wiki method documentation, and some link to learn about concepts
+* Create a image-schema of Darkwallet ecosystem parts and how are connected

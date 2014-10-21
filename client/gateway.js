@@ -62,9 +62,9 @@
         checkFunction(handler);
         var id = randomInteger();
         var message = JSON.stringify({
-            "id": id,
-            "command": command,
-            "params": params
+            id: id,
+            command: command,
+            params: params
         });
         this.websocket.send(message);
         this.handler_map[id] = handler;
@@ -367,14 +367,12 @@
 
     /**
      * Chan subscribe
-     * TODO ¿handle_update param?
      *
      * @param {String} section_name
      * @param {String} thread_id
      * @param {Function} handle_fetch
-     * @param {Function} handle_update
      */
-    GatewayClient.prototype.chan_unsubscribe = function(section_name, thread_id, handle_fetch, handle_update) {
+    GatewayClient.prototype.chan_unsubscribe = function(section_name, thread_id, handle_fetch) {
         checkFunction(handle_fetch);
         var handler_map = this.handler_map;
         makeRequest.call(this, 'chan_unsubscribe', [section_name, thread_id], function(response) {
@@ -398,7 +396,7 @@
         });
     };
 
-    // Expose GatewayClient
+    // Expose only GatewayClient
     window.GatewayClient = GatewayClient;
 
 })();
