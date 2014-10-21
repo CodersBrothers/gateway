@@ -32,7 +32,6 @@
         };
         this.websocket.onclose = function(evt) {
             self.connected = false;
-            //self.on_close(evt);
             if (handle_disconnect) {
                 handle_disconnect(null, evt)
             }
@@ -97,7 +96,6 @@
      * @param {Object} evt event
      */
     function onMessage(evt) {
-        //this.on_message(evt);
         var response = JSON.parse(evt.data);
         var id = response.id;
         // Should be a separate map entirely. This is a hack.
@@ -399,36 +397,6 @@
             handle_fetch(response.error, response.result[0]);
         });
     };
-
-    /**
-     * LIKE EVENTS
-     */
-
-    /**
-     * Close event handler
-     *
-     * @param {Object} evt event
-     */
-    GatewayClient.prototype.on_close = function(evt) {};
-
-    /**
-     * Error event handler
-     *
-     * @param {Object} evt event
-     *
-     * @throws {Object}
-     */
-    GatewayClient.prototype.on_error = function(evt) {
-        throw evt;
-    };
-
-    /**
-     * Message event handler
-     *
-     * @param {Object} evt event
-     */
-    GatewayClient.prototype.on_message = function(evt) {};
-
 
     // Expose GatewayClient
     window.GatewayClient = GatewayClient;
