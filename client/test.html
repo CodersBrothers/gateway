@@ -11,216 +11,243 @@
 
     function init() {
         output = document.getElementById("output");
-        var handle_connect = function() {
-            write_to_screen("CONNECTED");
+
+        var client = new GatewayClient(WEBSOCKET_SERVER_URL, function(){
+            output.innerHTML = 'CONNECTED';
             test(client);
-        };
-        var client = new GatewayClient(WEBSOCKET_SERVER_URL, handle_connect);
+        });
 
         client.on_error = function(evt) {
-            write_to_screen('<span style="color: red;">ERROR:</span> ' + evt.data);
+            output.innerHTML = '<span style="color: red;">ERROR:</span> ' + evt.data;
         };
 
-        client.on_close = function(evt) {
-            write_to_screen("DISCONNECTED");
+        client.on_close = function() {
+            output.innerHTML += "DISCONNECTED";
         };
-    }
-
-    function write_to_screen(message) {
-        var pre = document.createElement("p");
-        pre.innerHTML = message;
-        output.appendChild(pre);
-    }
-
-    function logError(error){
-        write_to_screen('<span style="color: red;">ERROR:</span> ' + error);
-    }
-
-    function logJSON(label, json){
-        var tx_str = JSON.stringify(json, null, 2);
-        return label + ": <pre>" + tx_str + "</pre>";
-    }
-
-    function blockLog(title, result){
-        var html = '<div class="block">' +
-                        '<h3>' + title + '</h3>' +
-                        result +
-                   '</div>';
-        write_to_screen(html);
     }
 
     window.addEventListener("load", init, false);
 
+    /**
+     * ON WEBSOCKET CONNECTED RUN ALL THIS AS EXAMPLE
+     */
     function test(client) {
 
         var txHash = "2604ba7d2190111dbc16b53b0f56ad4351ceabe1b9e1b4f6f1bc75e271bb09b9";
         var blkHash = "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f";
 
-        // Wellcome to piramyd of doom :D (Add promises)
-        fetchLastHeight(function(){
-            fetchTransaction(function(){
-                fetchHistory(function(){
-                    fetchBlockHeader(function(){
-                        fetchBlockHeaderByHash(function(){
-                            fetchBlockTransactionHashes(function(){
-                                fetchSpend(function(){
-                                    fetchTransactionIndex(function(){
-                                        fetchBlockHeight(function(){
-                                            broadcastTransaction(function(){
-                                                fetchStealth(function(){
-                                                    fetchTicker();
-                                                });
-                                            });
-                                        });
-                                    });
-                                });
-                            });
-                        });
-                    });
-                });
-            });
-        });
+        fetchLastHeight();
+        fetchTransaction();
+        fetchHistory();
+        fetchBlockHeader();
+        fetchBlockHeaderByHash();
+        fetchBlockTransactionHashes();
+        fetchSpend();
+        fetchTransactionIndex();
+        fetchBlockHeight();
+        broadcastTransaction();
+        fetchStealth();
+        fetchTicker();
 
-
-        function fetchLastHeight(cb){
+        function fetchLastHeight(){
+            var writeToScreen = new WriteToScreen('Fetch last height', 'Loading...');
             client.fetch_last_height(function(error, height) {
+                writeToScreen.clear();
                 if (error) {
-                    logError(error);
+                    writeToScreen.error(error);
                     return;
                 }
-                blockLog('Fetching last height', height);
-                cb();
+                writeToScreen.text(height);
+
             });
         }
 
-        function fetchTransaction(cb){
+        function fetchTransaction(){
+            var writeToScreen = new WriteToScreen('Fetching transaction', 'Loading...');
             client.fetch_transaction(txHash, function(error, tx){
+                writeToScreen.clear();
                 if (error) {
-                    logError(error);
+                    writeToScreen.error(error);
                     return;
                 }
-                blockLog('Fetching transaction', logJSON('tx', tx));
-                cb();
+                writeToScreen.json(tx);
             });
         }
 
-        function fetchHistory(cb){
-            var address = "1PF8uJGxheHCJePsbbPh22dQ1Z1nz3J61F";
+        function fetchHistory(){
+            var address = "14KBBqizrowzeezaTtgXY5us1LxZMksi93";
+            var writeToScreen = new WriteToScreen('Fetching address history ' + address, 'Loading...');
             client.fetch_history(address, 0, function (error, history) {
+                writeToScreen.clear();
                 if (error) {
-                    logError(error);
+                    writeToScreen.error(error);
                     return;
                 }
-                blockLog('Fetching address history ' + address, logJSON('History', history));
-                cb();
+                writeToScreen.json(history);
             });
         }
 
-        function fetchBlockHeader(cb){
+        function fetchBlockHeader(){
             var blk_height = 0;
+            var writeToScreen = new WriteToScreen('Fetch block header ' + blk_height, 'Loading...');
             client.fetch_block_header(blk_height, function (error, header) {
+                writeToScreen.clear();
                 if (error) {
-                    logError(error);
+                    writeToScreen.error(error);
                     return;
                 }
-                blockLog('Fetch block header ' + blk_height, logJSON('Block header', header));
-                cb();
+                writeToScreen.json(header);
             });
         }
 
-        function fetchBlockHeaderByHash(cb){
+        function fetchBlockHeaderByHash(){
+            var writeToScreen = new WriteToScreen('Fetching block header ' + blkHash, 'Loading...');
             client.fetch_block_header(blkHash, function (error, header) {
+                writeToScreen.clear();
                 if (error) {
-                    logError(error);
+                    writeToScreen.error(error);
                     return;
                 }
-                blockLog('Fetch block header ' + blkHash, logJSON('Block header', header));
-                cb();
+                writeToScreen.json(header);
             });
         }
 
-        function fetchBlockTransactionHashes(cb){
+        function fetchBlockTransactionHashes(){
             var blk_height = 100000;
+            var writeToScreen = new WriteToScreen('Fetching block tx hashes ' + blk_height, 'Loading...');
             client.fetch_block_transaction_hashes(blk_height, function (error, tx_hashes) {
+                writeToScreen.clear();
                 if (error) {
-                    logError(error);
+                    writeToScreen.error(error);
                     return;
                 }
-                blockLog('Fetch block tx hashes ' + blk_height, logJSON('Block tx hashes', tx_hashes));
-                cb();
+                writeToScreen.json(tx_hashes);
             });
         }
 
-        function fetchSpend(cb){
+        function fetchSpend(){
             var outpoint = ["3ca64964ecb449a70a845a437e83d6c4040b5529aaeeb5a89b50a5ab96a293f0", 0];
+            var writeToScreen = new WriteToScreen('Fetching spend ' + outpoint, 'Loading...');
             client.fetch_spend(outpoint, function (error, inpoint) {
+                writeToScreen.clear();
                 if (error) {
-                    logError(error);
+                    writeToScreen.error(error);
                     return;
                 }
-                blockLog('Fetch spend ' + outpoint, logJSON('Send input point', inpoint));
-                cb();
+                writeToScreen.json(inpoint);
             });
         }
 
-        function fetchTransactionIndex(cb){
+        function fetchTransactionIndex(){
+            var writeToScreen = new WriteToScreen('Fetching transaction index ' + txHash, 'Loading...');
             client.fetch_transaction_index(txHash, function (error, blk_height, tx_offset) {
+                writeToScreen.clear();
                 if (error) {
-                    logError(error);
+                    writeToScreen.error(error);
                     return;
                 }
-                blockLog('Fetch transaction index ' + txHash, "Tx index: " + blk_height + " " + tx_offset + "</pre>");
-                cb();
+                writeToScreen.text('Tx index: ' + blk_height + ' ' + tx_offset);
             });
         }
 
-        function fetchBlockHeight(cb){
+        function fetchBlockHeight(){
+            var writeToScreen = new WriteToScreen('Fetching block height ' + blkHash, 'Loading...');
             client.fetch_block_height(blkHash, function (error, blk_height, tx_offset) {
+                writeToScreen.clear();
                 if (error) {
-                    logError(error);
+                    writeToScreen.error(error);
                     return;
                 }
-                blockLog('Fetch block height ' + blkHash, "Tx index: " + blk_height + " " + tx_offset + "</pre>");
-                cb();
+                writeToScreen.text('Tx index: ' + blk_height + ' ' + tx_offset);
             });
         }
 
-        function broadcastTransaction(cb){
+        function broadcastTransaction(){
             var raw_tx = "0100000002f5e32bb2cdeed63c2afcda68075fd5ab87222b17376ea0f45377faaf9f89818e000000008b483045022100a1a7a7f10cf1453a9daa51f09deb26c6cfee439a1bc123e8b482782baf45b41902206a1da8fc5c9d441fb58ce54b88c157535cc01c654d38c5494426c7fe37d1be72014104cf2e5b02d6f02340f5a9defbbf710c388b8451c82145b1419fe9696837b1cdefc569a2a79baa6da2f747c3b25a102a081dfd5e799abc41262103e0d17114770bfffffffffd9dcdb0da7840ca00001d83737faeabcb80c0a0a5bcc884bcd833d01863d2f5000000008a47304402200211a9ab26ce9c5a195492c5ee947f0cedd4be16de9e8f3fe98c2421ae325ba9022008094b2db5374d21d8e2447d1c5ad914adc9d845912998a04997bfdb5a440f1c014104cf2e5b02d6f02340f5a9defbbf710c388b8451c82145b1419fe9696837b1cdefc569a2a79baa6da2f747c3b25a102a081dfd5e799abc41262103e0d17114770bffffffff0240548900000000001976a914981da5bcf1120129a4de20be4d8bf9ea9665dfb788ac80dff400000000001976a914f6475d27495d28093c7089a3d2d2486e78dc894088ac00000000";
+            var writeToScreen = new WriteToScreen('Broadcasting tx ' + raw_tx, 'Loading...');
             client.broadcast_transaction(raw_tx, function (error, count) {
+                writeToScreen.clear();
                 if (error) {
-                    logError(error);
+                    writeToScreen.error(error);
                     return;
                 }
-                blockLog('Broadcasting tx ' + raw_tx, "Tx radar count: <pre>" + count + "</pre>");
-                cb();
+                writeToScreen.text('Tx radar count: <pre>' + count + '</pre>');
             });
         }
 
-        function fetchStealth(cb){
+        function fetchStealth(){
             var prefix = [2, 1763505291];
+            var writeToScreen = new WriteToScreen('Fetching stealth ' + prefix, 'Loading...');
             client.fetch_stealth(prefix, function (error, results) {
+                writeToScreen.clear();
                 if (error) {
-                    logError(error);
+                    writeToScreen.error(error);
                     return;
                 }
-                blockLog('Fetch stealth ' + prefix, logJSON('Stealth results', results));
-                cb();
+                writeToScreen.json(results);
             }, 0);
         }
 
-        function fetchTicker(cb){
+        function fetchTicker(){
+            var writeToScreen = new WriteToScreen('Fetching ticker', 'Loading...');
             client.fetch_ticker("USD", function (error, result) {
+                writeToScreen.clear();
                 if (error) {
-                    logError(error);
+                    writeToScreen.error(error);
                     return;
                 }
-                blockLog('Fetch ticker', logJSON('Ticker results', result));
-                cb();
+                writeToScreen.json(result);
             });
         }
 
     }
+
+    /**
+     * ONLY FOR MANAGE SCREEN LOGS
+     */
+    (function(){
+
+        function writeInBlock(text){
+            var content = this.block.getElementsByClassName('content')[0];
+            content.innerHTML += text;
+        }
+
+        function WriteToScreen(title, text){
+            this.block = document.createElement("div");
+            this.block.setAttribute('class', 'block');
+            this.block.innerHTML = '<h3>' + title + '</h3>';
+            this.block.innerHTML += '<div class="content">' + text + '</div>';
+            output.appendChild(this.block);
+        }
+
+        WriteToScreen.prototype.clear = function(){
+            var content = this.block.getElementsByClassName('content');
+            while (content.firstChild) {
+                content.removeChild(content.firstChild);
+            }
+            return this;
+        };
+
+        WriteToScreen.prototype.text = function(text){
+            writeInBlock.call(this, text);
+        };
+
+        WriteToScreen.prototype.error = function(text){
+            var html = '<span class="error">ERROR:</span> ' + text;
+            writeInBlock.call(this, html);
+            return this;
+        };
+
+        WriteToScreen.prototype.json = function(json){
+            var tx_str = JSON.stringify(json, null, 2);
+            var html = '<pre>' + tx_str + '</pre>';
+            writeInBlock.call(this, html);
+            return this;
+        };
+
+        window.WriteToScreen = WriteToScreen;
+
+    })();
 
     </script>
     <style>
@@ -243,6 +270,9 @@
         font-size: 16px;
         font-weight: bold;
         border-bottom: 1px dashed #939259;
+    }
+    .error{
+        color: red;
     }
 </style>
     </head>
