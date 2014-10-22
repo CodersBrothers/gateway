@@ -10,8 +10,8 @@
      *
      * @param {String}   connect_uri Gateway websocket URI
      * @param {Function} handle_connect Callback to run when connected
-     * @param {Function} handle_disconnect Callback to run when disconnected
-     * @param {Function} handle_error Callback to run on errors (except connection errors go to handle_connect first parameter).
+     * @param {Function} [handle_disconnect] Callback to run when disconnected
+     * @param {Function} [handle_error] Callback to run on errors (except connection errors go to handle_connect first parameter).
      *
      * handle_* callbacks take parameters as (error, data)
      */
@@ -33,6 +33,7 @@
         };
         this.websocket.onclose = function(evt) {
             self.connected = false;
+            self.on_close(evt);
             if (handle_disconnect) {
                 handle_disconnect(null, evt)
             }
@@ -42,6 +43,7 @@
             }
         };
         this.websocket.onerror = function(evt) {
+            self.on_error(evt);
             // TODO: should probably disconnect
             if (!self.connected) {
                 handle_connect(evt);
@@ -161,7 +163,7 @@
      * Fetch stealth
      * TODO: move params order
      *
-     * @param {String} prefix
+     * @param {Array} prefix
      * @param {Function} handle_fetch
      * @param {Number} from_height
      */
@@ -210,7 +212,7 @@
     /**
      * Fetch block header
      *
-     * @param {String} index
+     * @param {Number} index
      * @param {Function} handle_fetch
      */
     GatewayClient.prototype.fetch_block_header = function(index, handle_fetch) {
@@ -223,7 +225,7 @@
     /**
      *  Fetch block transaction hashes
      *
-     *  @param {String} index
+     *  @param {Number} index
      *  @param {Function} handle_fetch
      */
     GatewayClient.prototype.fetch_block_transaction_hashes = function(index, handle_fetch) {
@@ -236,7 +238,7 @@
     /**
      *  Fetch spend
      *
-     *  @param {String} outpoint
+     *  @param {Array} outpoint
      *  @param {Function} handle_fetch
      */
     GatewayClient.prototype.fetch_spend = function(outpoint, handle_fetch) {
@@ -396,6 +398,24 @@
             handle_fetch(response.error, response.result[0]);
         });
     };
+
+    /**
+     * Error event handler
+     *
+     * @param {Object} evt event
+     *
+     * @throws {Object}
+     */
+    GatewayClient.prototype.on_error = function(evt){
+        throw evt;
+    };
+
+    /**
+     * Close event handler
+     *
+     * @param {Object} evt event
+     */
+    GatewayClient.prototype.on_close = function(evt){};
 
     // Expose at window
     window.GatewayClient = GatewayClient;
