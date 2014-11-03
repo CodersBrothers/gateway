@@ -358,7 +358,7 @@
      */
     GatewayClient.prototype.chan_subscribe = function(section_name, thread_id, handle_fetch, handle_update) {
         checkFunction(handle_fetch);
-        var handler_map = self.handler_map;
+        var handler_map = this.handler_map;
         makeRequest.call(this, 'chan_subscribe', [section_name, thread_id], function(response) {
             handle_fetch(response.error, response.result);
             if (handle_update) {
